@@ -40,6 +40,20 @@ func main() {
 				Fetch(c.String("sources"), c.Int("pages"), c.Int("threads"))
 			},
 		},
+
+		{
+			Name:      "image",
+			ShortName: "i",
+			Usage:     "fetch images in threads",
+			Flags: []cli.Flag{
+				cli.StringFlag{"tid, t", "", "thread id"},
+				cli.IntFlag{"threads, n", 0, "threads to update"},
+				cli.StringFlag{"source, s", "", "autohome or bitauto"},
+			},
+			Action: func(c *cli.Context) {
+				UpdateImages(c.String("source"), c.String("tid"), c.Int("threads"))
+			},
+		},
 	}
 
 	app.Run(os.Args)
@@ -58,10 +72,9 @@ func Fetch(sources string, maxPages, maxThreads int) {
 			bitauto := NewBitAuto()
 			threads = bitauto.Fetch(maxPages, maxThreads)
 		}
-		//log.Println("total get threads", len(threads))
-		if len(threads) > 0 {
-			t := threads[0]
-			log.Println(t.Author, t.Title, t.PubTime, t.From)
+		log.Println("total threads", len(threads))
+		for _, thread := range threads {
+			thread.Save()
 		}
 	}
 }
