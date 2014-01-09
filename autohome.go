@@ -20,7 +20,7 @@ func NewAutoHome() *AutoHome {
 	ah.Charset = "gbk"
 	ah.Domain = "http://club.autohome.com.cn"
 	ah.userPhotos = regexp.MustCompile(`club\d\.autoimg\.cn/album/userphotos/(.*)`)
-	ah.timeLayout = "2006-01-02 15:04:05"
+	ah.timeLayout = "2006-1-2 15:04:05"
 	return ah
 }
 
@@ -47,7 +47,13 @@ func (this *AutoHome) Fetch(maxPages int, maxThreads int) []*Thread {
 	}
 
 	for _, tid := range tids {
-		if t := this.FetchThread(tid); t != nil {
+		t := &Thread{}
+		t.Tid = tid
+		if exists, _ := t.Exists(); exists {
+			log.Println("Ignore exists thread", tid)
+			continue
+		}
+		if t = this.FetchThread(tid); t != nil {
 			threads = append(threads, t)
 		}
 	}
@@ -139,10 +145,10 @@ func (this *AutoHome) parseContent(base *goquery.Selection) []string {
 			src, _ := img.Attr("src")
 			src9, _ := img.Attr("src9")
 			if this.userPhotos.MatchString(src) {
-				content = append(content, src)
+				content = append(content, "[img]"+src+"[img]")
 				exist = true
 			} else if this.userPhotos.MatchString(src9) {
-				content = append(content, src9)
+				content = append(content, "[img]"+src9+"[img]")
 				exist = true
 			}
 		})

@@ -27,7 +27,7 @@ func main() {
 			Name:        "fetch",
 			ShortName:   "f",
 			Usage:       "fetch threads from bbs",
-			Description: "Note: this command will overwrite data, if you want to update it, please use update command",
+			Description: "Note: this command will overwrite data, if you want to update, please use update command",
 			Flags: []cli.Flag{
 				cli.StringFlag{"sources, s", "", "the source we fetch from, may autohome or bitauto, separated by comma"},
 				//cli.StringSliceFlag{"sources, s", &cli.StringSlice{}, "the source we fetch from, may autohome or bitauto"},

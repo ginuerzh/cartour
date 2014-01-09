@@ -28,6 +28,13 @@ func (this *Thread) Save() error {
 	return withCollection(threadsColl, insert)
 }
 
+func (this *Thread) Exists() (bool, error) {
+	count := 0
+	err := search(fileColl, bson.M{"tid": this.Tid}, nil, 0, 0, nil, &count, nil)
+
+	return count > 0, err
+}
+
 func (this *Thread) findOne(query interface{}) (bool, error) {
 	var threads []Thread
 

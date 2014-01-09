@@ -11,8 +11,8 @@ import (
 
 var (
 	mgoSession   *mgo.Session
-	databaseName = "cartour"
-	threadsColl  = "threads"
+	databaseName = "drivetoday"
+	threadsColl  = "articles"
 	fileColl     = "files"
 )
 

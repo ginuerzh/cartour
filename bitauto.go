@@ -122,7 +122,7 @@ func (this *BitAuto) perPageContent(pageUrl string, t *Thread) bool {
 		link := post.Find("a.mingzi")
 		url, exist := link.Attr("href")
 		if exist {
-			t.Author = link.Text()
+			t.Author = strings.TrimSpace(link.Text())
 			t.AuthorPage = url
 		}
 
@@ -176,10 +176,10 @@ func (this *BitAuto) parseContent(base *goquery.Selection) []string {
 			src, _ := img.Attr("_src")
 			sourcesrc, _ := img.Attr("_sourcesrc")
 			if this.userPhotos.MatchString(src) {
-				content = append(content, src)
+				content = append(content, "[img]"+src+"[img]")
 				exist = true
 			} else if this.userPhotos.MatchString(sourcesrc) {
-				content = append(content, sourcesrc)
+				content = append(content, "[img]"+sourcesrc+"[img]")
 				exist = true
 			}
 		})
