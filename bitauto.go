@@ -24,7 +24,7 @@ func NewBitAuto() *BitAuto {
 	return ba
 }
 
-func (this *BitAuto) Fetch(maxPages int, maxThreads int) []*Thread {
+func (this *BitAuto) Fetch(maxPages int, maxThreads int) (total int) {
 	if maxPages <= 0 {
 		maxPages = DefaultPages
 	}
@@ -32,7 +32,7 @@ func (this *BitAuto) Fetch(maxPages int, maxThreads int) []*Thread {
 		maxThreads = DefaultThreads
 	}
 	tids := make([]string, 0, maxThreads)
-	threads := make([]*Thread, 0, maxThreads)
+	//threads := make([]*Thread, 0, maxThreads)
 
 	for i := 0; i < maxPages; i++ {
 		list := this.GetTids(this.ForumPageUrl(i+1), maxThreads)
@@ -47,17 +47,34 @@ func (this *BitAuto) Fetch(maxPages int, maxThreads int) []*Thread {
 	}
 
 	for _, tid := range tids {
-		if t := this.FetchThread(tid); t != nil {
-			threads = append(threads, t)
+		t := &Thread{}
+		t.Tid = tid
+		if exists, _ := t.Exists(); exists {
+			log.Println("Ignore exists thread", tid)
+			continue
+		}
+
+		if t = this.FetchThread(tid); t != nil {
+			//threads = append(threads, t)
+			if err := t.Save(); err != nil {
+				log.Println("save thread", tid, "failed:", err)
+			} else {
+				total++
+				log.Println("save thread", tid, "ok", t.Id.Hex())
+			}
+		} else {
+			log.Println("get thread", tid, "failed:")
 		}
 	}
 
-	this.Threads = threads
+	//this.Threads = threads
 
-	return threads
+	return
 }
 
 func (this *BitAuto) GetTids(pageUrl string, max int) []string {
+	log.Println("bitauto thread list", pageUrl)
+
 	tids := make([]string, 0, 100)
 
 	doc, err := GetQueryDoc(pageUrl, this.Charset)
@@ -95,6 +112,8 @@ func (this *BitAuto) FetchThread(tid string) *Thread {
 	t.Tid = tid
 	url := this.ThreadPageUrl(tid, 1)
 	t.Url = url
+
+	log.Println("fetch bitauto", t.Url)
 
 	i := 1
 	for {
@@ -135,7 +154,8 @@ func (this *BitAuto) perPageContent(pageUrl string, t *Thread) bool {
 		if err != nil {
 			log.Fatal(err)
 		}
-		t.PubTime = pubtime
+		d, _ := time.ParseDuration("-8h")
+		t.PubTime = pubtime.Add(d)
 	}
 
 	doc.Find(".postcontbox > .postcont_list").Each(func(i int, post *goquery.Selection) {

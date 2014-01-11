@@ -21,16 +21,16 @@ type Fetcher interface {
 }
 
 type CarTour struct {
-	Name       string
-	Domain     string
-	Charset    string
-	Threads    []*Thread
+	Name    string
+	Domain  string
+	Charset string
+	//Threads    []*Thread
 	userPhotos *regexp.Regexp
 	timeLayout string
 }
 
 func GetQueryDoc(url string, charset string) (*goquery.Document, error) {
-	log.Println("GET", url)
+	//log.Println("GET", url)
 
 	if len(charset) == 0 {
 		charset = "utf-8"

@@ -24,7 +24,7 @@ func NewAutoHome() *AutoHome {
 	return ah
 }
 
-func (this *AutoHome) Fetch(maxPages int, maxThreads int) []*Thread {
+func (this *AutoHome) Fetch(maxPages int, maxThreads int) (total int) {
 	if maxPages <= 0 {
 		maxPages = DefaultPages
 	}
@@ -32,7 +32,7 @@ func (this *AutoHome) Fetch(maxPages int, maxThreads int) []*Thread {
 		maxThreads = DefaultThreads
 	}
 	tids := make([]string, 0, maxThreads)
-	threads := make([]*Thread, 0, maxThreads)
+	//threads := make([]*Thread, 0, maxThreads)
 
 	for i := 0; i < maxPages; i++ {
 		list := this.GetTids(this.ForumPageUrl(i+1), maxThreads)
@@ -54,22 +54,32 @@ func (this *AutoHome) Fetch(maxPages int, maxThreads int) []*Thread {
 			continue
 		}
 		if t = this.FetchThread(tid); t != nil {
-			threads = append(threads, t)
+			if err := t.Save(); err != nil {
+				log.Println("save thread", tid, "failed:", err)
+			} else {
+				total++
+				log.Println("save thread", tid, "ok", t.Id.Hex())
+			}
+		} else {
+			log.Println("get thread", tid, "failed:")
 		}
 	}
 
-	this.Threads = threads
+	//this.Threads = threads
 
-	return threads
+	return
 }
 
 func (this *AutoHome) FetchThread(tid string) *Thread {
+
 	t := &Thread{}
 	t.Content = make([]string, 0, 100)
 
 	t.From = this.Name
 	t.Tid = tid
 	t.Url = this.ThreadPageUrl(tid, 1)
+
+	log.Println("fetch autohome", t.Url)
 
 	doc, err := GetQueryDoc(t.Url, this.Charset)
 	if err != nil {
@@ -86,7 +96,8 @@ func (this *AutoHome) FetchThread(tid string) *Thread {
 	if err != nil {
 		log.Println(err)
 	} else {
-		t.PubTime = pubtime
+		d, _ := time.ParseDuration("-8h")
+		t.PubTime = pubtime.Add(d)
 	}
 
 	t.Title = topic.Find(".maxtitle").Text()
@@ -165,6 +176,8 @@ func (this *AutoHome) parseContent(base *goquery.Selection) []string {
 }
 
 func (this *AutoHome) GetTids(pageUrl string, max int) []string {
+	log.Println("autohome thread list", pageUrl)
+
 	tids := make([]string, 0, 100)
 
 	doc, err := GetQueryDoc(pageUrl, this.Charset)

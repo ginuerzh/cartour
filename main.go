@@ -64,17 +64,15 @@ func Fetch(sources string, maxPages, maxThreads int) {
 		if len(name) == 0 {
 			continue
 		}
-		threads := []*Thread{}
+		count := 0
+		//threads := []*Thread{}
 		if name == autoHome {
 			autohome := NewAutoHome()
-			threads = autohome.Fetch(maxPages, maxThreads)
+			count = autohome.Fetch(maxPages, maxThreads)
 		} else if name == bitAuto {
 			bitauto := NewBitAuto()
-			threads = bitauto.Fetch(maxPages, maxThreads)
+			count = bitauto.Fetch(maxPages, maxThreads)
 		}
-		log.Println("total threads", len(threads))
-		for _, thread := range threads {
-			thread.Save()
-		}
+		log.Println("fetch threads done, total", count)
 	}
 }

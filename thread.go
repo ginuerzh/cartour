@@ -17,6 +17,7 @@ type Thread struct {
 	AuthorPage string    `bson:"author_page"`
 	PubTime    time.Time `bson:"pub_time"`
 	Content    []string
+	Image      string
 }
 
 func (this *Thread) Save() error {
@@ -30,7 +31,7 @@ func (this *Thread) Save() error {
 
 func (this *Thread) Exists() (bool, error) {
 	count := 0
-	err := search(fileColl, bson.M{"tid": this.Tid}, nil, 0, 0, nil, &count, nil)
+	err := search(threadsColl, bson.M{"tid": this.Tid}, nil, 0, 0, nil, &count, nil)
 
 	return count > 0, err
 }
@@ -67,6 +68,7 @@ func (this *Thread) UpdateContent() error {
 	change := bson.M{
 		"$set": bson.M{
 			"content": this.Content,
+			"image":   this.Image,
 		},
 	}
 
