@@ -75,6 +75,7 @@ func (this *AutoHome) FetchThread(tid string) *Thread {
 	t := &Thread{}
 	t.Content = make([]string, 0, 100)
 
+	t.Publish = false
 	t.From = this.Name
 	t.Tid = tid
 	t.Url = this.ThreadPageUrl(tid, 1)

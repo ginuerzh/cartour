@@ -108,6 +108,7 @@ func (this *BitAuto) FetchThread(tid string) *Thread {
 	t := &Thread{}
 	t.Content = make([]string, 0, 100)
 
+	t.Publish = false
 	t.From = this.Name
 	t.Tid = tid
 	url := this.ThreadPageUrl(tid, 1)

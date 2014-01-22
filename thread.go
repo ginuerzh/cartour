@@ -4,7 +4,13 @@ package main
 import (
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
+	"math/rand"
 	"time"
+)
+
+var (
+	randMaxInt            = 1 << 31
+	random     *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
 )
 
 type Thread struct {
@@ -18,11 +24,14 @@ type Thread struct {
 	PubTime    time.Time `bson:"pub_time"`
 	Content    []string
 	Image      string
+	Random     int
+	Publish    bool
 }
 
 func (this *Thread) Save() error {
 	insert := func(c *mgo.Collection) error {
 		this.Id = bson.NewObjectId()
+		this.Random = random.Intn(randMaxInt)
 		return c.Insert(this)
 	}
 

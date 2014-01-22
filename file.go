@@ -12,7 +12,7 @@ type File struct {
 	Id          bson.ObjectId `bson:"_id,omitempty"`
 	Fid         string
 	Name        string `bson:"filename"`
-	Size        int64  `bson:"length"`
+	Length      int64  `bson:"length"`
 	Md5         string
 	Owner       string
 	Count       int
