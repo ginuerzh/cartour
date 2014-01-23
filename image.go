@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	//"sync"
 	"time"
 )
 
@@ -49,6 +50,21 @@ func UpdateImages(source, tid string, maxThreads int) {
 		if len(threads) == 0 {
 			break
 		}
+
+		/*
+			var wg sync.WaitGroup
+
+			for i, _ := range threads {
+				wg.Add(1)
+				go func(thread *Thread) {
+					defer wg.Done()
+
+					FetchThreadImages(thread)
+				}(&threads[i])
+			}
+
+			wg.Wait()
+		*/
 		for i, _ := range threads {
 			FetchThreadImages(&threads[i])
 		}
@@ -64,13 +80,13 @@ func FetchThreadImages(thread *Thread) {
 			strings.HasSuffix(contents[i], "[img]") {
 
 			url := strings.TrimSuffix(strings.TrimPrefix(contents[i], "[img]"), "[img]")
-			fid, size, size1, err := fetchImage(thread.From, url, thread.Url)
+			fid, size, size1, size2, err := fetchImage(thread.From, url, thread.Url)
 			if err != nil {
-				weedo.Delete(fid, 2)
+				weedo.Delete(fid, 3)
 				log.Println(fid, err)
 				continue
 			}
-			contents[i] = "[fid]" + fid + "," + size + "," + size1 + "[fid]"
+			contents[i] = "[fid]" + fid + "," + size + "," + size1 + "," + size2 + "[fid]"
 			log.Println("fetch image ok", contents[i])
 			if len(thread.Image) == 0 {
 				thread.Image = fid
@@ -90,7 +106,7 @@ func FetchThreadImages(thread *Thread) {
 	thread.Pub(true)
 }
 
-func fetchImage(from, url, referer string) (fid string, size string, size1 string, err error) {
+func fetchImage(from, url, referer string) (fid string, size string, size1 string, size2 string, err error) {
 	//log.Println("fetch image", url)
 	request, err := http.NewRequest("GET", url, nil)
 
@@ -118,7 +134,7 @@ func fetchImage(from, url, referer string) (fid string, size string, size1 strin
 	}
 
 	//fid, size, err := weedo.AssignUpload(s[len(s)-1], "image/jpeg", bytes.NewBuffer(data))
-	fid, err = weedo.AssignN(2)
+	fid, err = weedo.AssignN(3)
 	if err != nil {
 		return
 	}
@@ -152,13 +168,20 @@ func fetchImage(from, url, referer string) (fid string, size string, size1 strin
 	}
 	size1 = strconv.Itoa(resized.Bounds().Dx()) + "X" + strconv.Itoa(resized.Bounds().Dy())
 
+	imgResized.Reset()
+	resized = resize.Resize(80, 0, image, resize.MitchellNetravali)
+	if err = jpeg.Encode(imgResized, resized, nil); err == nil {
+		weedo.VolumeUpload(fid, 2, filename, "image/jpeg", imgResized)
+	}
+	size2 = strconv.Itoa(resized.Bounds().Dx()) + "X" + strconv.Itoa(resized.Bounds().Dy())
+
 	file := File{}
 	file.Fid = fid
 	file.ContentType = "image/jpeg"
 	file.Name = filename
 	file.Owner = "admin"
 	file.Length = length
-	file.Count = 2
+	file.Count = 3
 	file.UploadDate = time.Now()
 	file.Md5 = FileMd5(bytes.NewBuffer(data))
 	err = file.Save()
