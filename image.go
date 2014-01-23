@@ -81,14 +81,13 @@ func FetchThreadImages(thread *Thread) {
 	}
 	if count > 0 {
 		log.Println("total images", count)
-		thread.Publish = true
 		if err := thread.UpdateContent(); err != nil {
 			log.Println("save thread", thread.Id.Hex(), "images failed:", err)
 		} else {
 			log.Println("save thread", thread.Id.Hex(), "images ok")
 		}
 	}
-
+	thread.Pub(true)
 }
 
 func fetchImage(from, url, referer string) (fid string, size string, size1 string, err error) {

@@ -83,3 +83,12 @@ func (this *Thread) UpdateContent() error {
 
 	return updateId(threadsColl, this.Id, change)
 }
+
+func (this *Thread) Pub(pub bool) error {
+	change := bson.M{
+		"$set": bson.M{
+			"publish": pub,
+		},
+	}
+	return updateId(threadsColl, this.Id, change)
+}
