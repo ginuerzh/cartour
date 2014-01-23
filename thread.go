@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	randMaxInt            = 1 << 31
+	randMaxInt            = 1 << 20
 	random     *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
 )
 
