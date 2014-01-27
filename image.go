@@ -82,25 +82,28 @@ func FetchThreadImages(thread *Thread) {
 			url := strings.TrimSuffix(strings.TrimPrefix(contents[i], "[img]"), "[img]")
 			fid, size, size1, size2, err := fetchImage(thread.From, url, thread.Url)
 			if err != nil {
-				weedo.Delete(fid, 3)
-				log.Println(fid, err)
+				if len(fid) > 0 {
+					weedo.Delete(fid, 3)
+				}
+				log.Println(url)
+				log.Println("fetch image failed", err)
 				continue
 			}
 			contents[i] = "[fid]" + fid + "," + size + "," + size1 + "," + size2 + "[fid]"
-			log.Println("fetch image ok", contents[i])
+			//log.Println("fetch image ok", contents[i])
 			if len(thread.Image) == 0 {
 				thread.Image = fid
-				log.Println("add first image", thread.Image)
+				//log.Println("add first image", thread.Image)
 			}
 			count++
 		}
 	}
 	if count > 0 {
-		log.Println("total images", count)
+		//log.Println("total images", count)
 		if err := thread.UpdateContent(); err != nil {
 			log.Println("save thread", thread.Id.Hex(), "images failed:", err)
 		} else {
-			log.Println("save thread", thread.Id.Hex(), "images ok")
+			//log.Println("save thread", thread.Id.Hex(), "images ok")
 		}
 	}
 	thread.Pub(true)
@@ -124,7 +127,7 @@ func fetchImage(from, url, referer string) (fid string, size string, size1 strin
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		err = errors.New(resp.Status)
+		err = errors.New("http error: " + resp.Status)
 		return
 	}
 
