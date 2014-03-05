@@ -17,6 +17,8 @@ import (
 )
 
 func UpdateImages(source, tid string, maxThreads int) {
+	log.Println("start update images")
+
 	thread := &Thread{}
 	if tid != "" {
 		if find, err := thread.FindByTid(tid); !find {
@@ -70,6 +72,8 @@ func UpdateImages(source, tid string, maxThreads int) {
 		}
 		skip += limit
 	}
+
+	log.Println("update images done")
 }
 
 func FetchThreadImages(thread *Thread) {
@@ -93,7 +97,7 @@ func FetchThreadImages(thread *Thread) {
 			//log.Println("fetch image ok", contents[i])
 			if len(thread.Image) == 0 {
 				thread.Image = fid
-				//log.Println("add first image", thread.Image)
+				log.Println("add first image", thread.Image)
 			}
 			count++
 		}
@@ -103,7 +107,7 @@ func FetchThreadImages(thread *Thread) {
 		if err := thread.UpdateContent(); err != nil {
 			log.Println("save thread", thread.Id.Hex(), "images failed:", err)
 		} else {
-			//log.Println("save thread", thread.Id.Hex(), "images ok")
+			log.Println("save thread", thread.Id.Hex(), "images ok")
 		}
 	}
 	thread.Pub(true)
