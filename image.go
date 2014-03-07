@@ -7,7 +7,8 @@ import (
 	"github.com/ginuerzh/weedo"
 	"github.com/nfnt/resize"
 	"image/jpeg"
-	"io/ioutil"
+	"io"
+	//"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -117,6 +118,27 @@ func FetchThreadImages(thread *Thread) {
 	thread.Pub(true)
 }
 
+func readAll(r io.Reader) ([]byte, error) {
+	buf := &bytes.Buffer{}
+	data := make([]byte, 100*1024)
+
+	for {
+		n, err := r.Read(data)
+		if n > 0 {
+			buf.Write(data[0:n])
+		}
+		if err != nil {
+			if err == io.EOF {
+				break
+			} else {
+				return nil, err
+			}
+		}
+		//log.Println("read bytes", n)
+	}
+	return buf.Bytes(), nil
+}
+
 func fetchImage(from, url, referer string) (fid string, size string, size1 string, size2 string, err error) {
 	log.Println(url)
 	request, err := http.NewRequest("GET", url, nil)
@@ -139,7 +161,8 @@ func fetchImage(from, url, referer string) (fid string, size string, size1 strin
 		return
 	}
 
-	data, err := ioutil.ReadAll(resp.Body)
+	//data, err := ioutil.ReadAll(resp.Body)
+	data, err := readAll(resp.Body)
 	if err != nil {
 		return
 	}
