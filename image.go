@@ -43,7 +43,7 @@ func UpdateImages(source, tid string, maxThreads int) {
 		if limit == 0 {
 			break
 		}
-		_, threads, err := GetThreadList(source, skip, limit, true)
+		_, threads, err := GetThreadList(source, skip, limit, false)
 		if err != nil {
 			log.Println(err)
 			return
