@@ -24,7 +24,7 @@ func NewAutoHome() *AutoHome {
 	return ah
 }
 
-func (this *AutoHome) Fetch(maxPages int, maxThreads int) (total int) {
+func (this *AutoHome) FetchTravel(maxPages int, maxThreads int) (total int) {
 	if maxPages <= 0 {
 		maxPages = DefaultPages
 	}
@@ -32,7 +32,31 @@ func (this *AutoHome) Fetch(maxPages int, maxThreads int) (total int) {
 		maxThreads = DefaultThreads
 	}
 	tids := make([]string, 0, maxThreads)
-	//threads := make([]*Thread, 0, maxThreads)
+
+	for i := 0; i < maxPages; i++ {
+		list := this.GetTravelTids(this.TravelPageUrl(i+1), maxThreads)
+		if len(list) > 0 {
+			tids = append(tids, list...)
+		}
+
+		maxThreads -= len(list)
+		if maxThreads == 0 {
+			break
+		}
+	}
+
+	return this.fetchThreads(tids)
+}
+
+func (this *AutoHome) Fetch(maxPages int, maxThreads int) (total int) {
+	if maxPages <= 0 {
+		maxPages = DefaultPages
+	}
+	if maxThreads <= 0 {
+		maxThreads = DefaultThreads
+	}
+
+	tids := make([]string, 0, maxThreads)
 
 	for i := 0; i < maxPages; i++ {
 		list := this.GetTids(this.ForumPageUrl(i+1), maxThreads)
@@ -46,6 +70,10 @@ func (this *AutoHome) Fetch(maxPages int, maxThreads int) (total int) {
 		}
 	}
 
+	return this.fetchThreads(tids)
+}
+
+func (this *AutoHome) fetchThreads(tids []string) (total int) {
 	for _, tid := range tids {
 		t := &Thread{}
 		t.Tid = tid
@@ -53,6 +81,15 @@ func (this *AutoHome) Fetch(maxPages int, maxThreads int) (total int) {
 			log.Println("Ignore exists thread", tid)
 			continue
 		}
+
+		list := strings.Split(tid, "-")
+		t.Tid = list[1] + "-" + list[2]
+		//log.Println("check exist", t.Tid)
+		if exists, _ := t.Exists(); exists {
+			log.Println("Ignore exists thread", tid)
+			continue
+		}
+
 		if t = this.FetchThread(tid); t != nil {
 			if err := t.Save(); err != nil {
 				log.Println("save thread", tid, "failed:", err)
@@ -231,6 +268,39 @@ func (this *AutoHome) parseContent(base *goquery.Selection) []string {
 }
 */
 
+func (this *AutoHome) GetTravelTids(pageUrl string, max int) []string {
+	log.Println("autohome travel thread list", pageUrl)
+
+	tids := make([]string, 0, 100)
+
+	doc, err := GetQueryDoc(pageUrl, this.Charset)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+
+	doc.Find("ul.content > li").EachWithBreak(func(i int, li *goquery.Selection) bool {
+		link := li.Find("div.pic_txt > a")
+		if link.Size() == 0 {
+			//log.Println("not exists!")
+			return true
+		}
+
+		uri, exist := link.Attr("href")
+		if !exist {
+			return true
+		}
+
+		tids = append(tids, this.parseThreadId(uri))
+
+		if len(tids) >= max {
+			return false
+		}
+		return true
+	})
+	return tids
+}
+
 func (this *AutoHome) GetTids(pageUrl string, max int) []string {
 	log.Println("autohome thread list", pageUrl)
 
@@ -265,7 +335,12 @@ func (this *AutoHome) GetTids(pageUrl string, max int) []string {
 
 func (this *AutoHome) parseThreadId(url string) string {
 	list := strings.Split(url, "-")
-	return list[2] + "-" + list[3]
+	return list[1] + "-" + list[2] + "-" + list[3]
+}
+
+func (this *AutoHome) TravelPageUrl(pageIndex int) string {
+	return this.Domain + "/jingxuan/5/" +
+		strconv.FormatInt(int64(pageIndex), 10)
 }
 
 func (this *AutoHome) ForumPageUrl(pageIndex int) string {
@@ -275,6 +350,6 @@ func (this *AutoHome) ForumPageUrl(pageIndex int) string {
 }
 
 func (this *AutoHome) ThreadPageUrl(tid string, pageIndex int) string {
-	return this.Domain + "/bbs/threadowner-o-" + tid + "-" +
+	return this.Domain + "/bbs/threadowner-" + tid + "-" +
 		strconv.FormatInt(int64(pageIndex), 10) + ".html#pvareaid=101435"
 }

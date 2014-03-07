@@ -8,8 +8,9 @@ import (
 )
 
 const (
-	autoHome = "autohome"
-	bitAuto  = "bitauto"
+	autoHome       = "autohome"
+	autoHomeTravel = "travel"
+	bitAuto        = "bitauto"
 )
 
 func init() {
@@ -72,6 +73,9 @@ func Fetch(sources string, maxPages, maxThreads int) {
 		} else if name == bitAuto {
 			bitauto := NewBitAuto()
 			count = bitauto.Fetch(maxPages, maxThreads)
+		} else if name == autoHomeTravel {
+			autohome := NewAutoHome()
+			count = autohome.FetchTravel(maxPages, maxThreads)
 		}
 		log.Println("fetch threads done, total", count)
 	}
