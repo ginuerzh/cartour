@@ -118,7 +118,7 @@ func FetchThreadImages(thread *Thread) {
 }
 
 func fetchImage(from, url, referer string) (fid string, size string, size1 string, size2 string, err error) {
-	//log.Println("fetch image", url)
+	log.Println(url)
 	request, err := http.NewRequest("GET", url, nil)
 
 	if err != nil {
