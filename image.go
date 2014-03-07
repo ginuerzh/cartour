@@ -77,6 +77,10 @@ func UpdateImages(source, tid string, maxThreads int) {
 }
 
 func FetchThreadImages(thread *Thread) {
+	if thread.Publish {
+		return
+	}
+	log.Println("fetch thread images", thread.Id.Hex(), thread.Title)
 	contents := thread.Content
 	count := 0
 	for i, _ := range contents {
