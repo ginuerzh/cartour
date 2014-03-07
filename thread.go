@@ -61,11 +61,14 @@ func (this *Thread) FindByTid(tid string) (bool, error) {
 	return this.findOne(bson.M{"tid": tid})
 }
 
-func GetThreadList(source string, skip, limit int) (total int, threads []Thread, err error) {
+func GetThreadList(source string, skip, limit int, pubExcluded bool) (total int, threads []Thread, err error) {
 	var query bson.M
 
 	if source != "" {
 		query = bson.M{"from": source}
+		if pubExcluded {
+			query["publish"] = false
+		}
 	}
 
 	err = search(threadsColl, query, nil, skip, limit, []string{"-pub_time"}, &total, &threads)
