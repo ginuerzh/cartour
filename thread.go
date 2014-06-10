@@ -95,3 +95,11 @@ func (this *Thread) Pub(pub bool) error {
 	}
 	return updateId(threadsColl, this.Id, change)
 }
+
+func (this *Thread) Remove() error {
+	rm := func(c *mgo.Collection) error {
+		return c.RemoveId(this.Id)
+	}
+
+	return withCollection(threadsColl, rm)
+}

@@ -78,6 +78,28 @@ func updateId(collection string, id bson.ObjectId, change interface{}) error {
 	return withCollection(collection, update)
 }
 
+func iter(collection string, query interface{}, sortFields []string, total *int) (*mgo.Iter, error) {
+	var it *mgo.Iter
+
+	q := func(c *mgo.Collection) (err error) {
+		qy := c.Find(query)
+		qy.Sort(sortFields...)
+
+		if total != nil {
+			if *total, err = qy.Count(); err != nil {
+				return
+			}
+		}
+
+		it = qy.Iter()
+		return nil
+	}
+
+	err := withCollection(collection, q)
+
+	return it, err
+}
+
 func FileMd5(file io.Reader) string {
 	h := md5.New()
 	io.Copy(h, file)

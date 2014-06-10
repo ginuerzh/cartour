@@ -55,6 +55,18 @@ func main() {
 				UpdateImages(c.String("source"), c.String("tid"), c.Int("threads"))
 			},
 		},
+
+		{
+			Name:  "remove",
+			Usage: "remove threads and all related resource(e.g. images).",
+			Flags: []cli.Flag{
+				cli.StringFlag{"from", "", "date from, e.g. 2014-01-01"},
+				cli.StringFlag{"to", "", "date to, same as from"},
+			},
+			Action: func(c *cli.Context) {
+				Remove(c.String("from"), c.String("to"))
+			},
+		},
 	}
 
 	app.Run(os.Args)
