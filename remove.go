@@ -41,8 +41,8 @@ func Remove(from, to string) int {
 
 	defer it.Close()
 
-	total = 0
 	for it.Next(&thread) {
+		fmt.Println(thread.Id.Hex())
 		delThread(&thread)
 	}
 
@@ -50,6 +50,7 @@ func Remove(from, to string) int {
 }
 
 func delThread(thread *Thread) {
+	fmt.Println("start delete images...")
 	for _, text := range thread.Content {
 
 		if strings.HasPrefix(text, "[img]") && strings.HasSuffix(text, "[img]") {
@@ -70,8 +71,9 @@ func delThread(thread *Thread) {
 			}
 		}
 	}
-
+	fmt.Println("delete images done")
 	if err := thread.Remove(); err != nil {
 		fmt.Println("remove:", err)
 	}
+	fmt.Println("remove thread", thread.Id.Hex(), "done!")
 }
